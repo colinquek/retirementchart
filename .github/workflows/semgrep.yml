@@ -1,0 +1,32 @@
+name: Semgrep OSS
+
+on:
+  push:
+    branches: [ "main", "master", "dev" ]
+  pull_request:
+    branches: [ "main", "master", "dev" ]
+  workflow_dispatch: {}
+
+jobs:
+  semgrep:
+    name: Semgrep Security Scan
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep:latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep OSS Scan
+        run: |
+          mkdir -p reports
+          semgrep ci --sarif --output=reports/semgrep.sarif || true
+        continue-on-error: true
+
+      - name: Upload Semgrep report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-report
+          path: reports/semgrep.sarif
+          retention-days: 30
