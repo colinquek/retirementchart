@@ -25,17 +25,17 @@ button{margin-top:10px;padding:8px 10px;width:100%;font-size:14px}
 <div id="panel">
 <div><b>Inputs</b></div>
 <label>Starting portfolio $<input id="p0" type="number" min="0" step="1000" value="1000000"></label>
+<label>Retirement Start age<input id="start_age" type="number" min="0" step="1" value="55"></label>
+<label>Assumed end of Life age<input id="end_age" type="number" min="0" step="1" value="95"></label>
 <label>Annual spending $<input id="spend0" type="number" min="0" step="1000" value="60000"></label>
-<label>Inflation %<input id="infl" type="number" min="0" step="0.1" value="2"></label>
+<label>Inflation %<input id="infl" type="number" min="0" step="0.1" value="2.5"></label>
 <label>Return %<input id="ret" type="number" min="0" step="0.1" value="7"></label>
-<label>Annuity age<input id="ann_age" type="number" min="0" step="1" value="65"></label>
-<label>Annuity payment $<input id="ann" type="number" min="0" step="100" value="21360"></label>
-<label>Start age<input id="start_age" type="number" min="0" step="1" value="55"></label>
-<label>End age<input id="end_age" type="number" min="0" step="1" value="95"></label>
+<label>Annuity/CPF payout start age<input id="ann_age" type="number" min="0" step="1" value="65"></label>
+<label>Annuity/CPF annual payout $<input id="ann" type="number" min="0" step="100" value="21360"></label>
 <button id="reset">Reset</button>
 <div class="info-box">
 <div class="title">Description</div>
-<div>If the graph lines cross <b>below 0</b> on the vertical axis, it means the portfolio has depleted.</div>
+<div>If the graph line crosses <b>below 0</b> on the vertical axis, it means the portfolio has depleted.</div>
 <div>If there is no 0 in the vertical axis, it means the portfolio will not be depleted.</div>
 </div>
 <div class="disclaimer-box">
@@ -47,7 +47,7 @@ button{margin-top:10px;padding:8px 10px;width:100%;font-size:14px}
 </div>
 </div>
 <script>
-const defaults={p0:1000000,spend0:60000,infl:2,ret:7,ann_age:65,ann:21360,start_age:55,end_age:95};
+const defaults={p0:1000000,spend0:60000,infl:2.5,ret:7,ann_age:65,ann:21360,start_age:55,end_age:95};
 function clamp(v){return Math.max(0, Number(v)||0)}
 function getVals(){
  return {p0:clamp(p0.value),spend0:clamp(spend0.value),infl:clamp(infl.value),ret:clamp(ret.value),ann_age:clamp(ann_age.value),ann:clamp(ann.value),start_age:clamp(start_age.value),end_age:clamp(end_age.value)}
@@ -67,12 +67,11 @@ function sim(){
 function fmt(x){return 'S$'+Math.round(x).toLocaleString()}
 let clickTrace=null;
 function draw(){
- const d=sim();
- const data=[
-  {x:d.ages,y:d.start,type:'scatter',mode:'lines',name:'Start bal',fill:'tozeroy',opacity:0.5,line:{width:3}},
-  {x:d.ages,y:d.end,type:'scatter',mode:'lines',name:'End bal',fill:'tozeroy',opacity:0.5,line:{width:3,dash:'dash'}},
- ];
- if(clickTrace) data.push(clickTrace);
+const d=sim();
+const data=[
+ {x:d.ages,y:d.start,type:'scatter',mode:'lines',name:'Start bal',fill:'tozeroy',opacity:0.5,line:{width:3}}
+];
+if(clickTrace) data.push(clickTrace);
  const layout={title:{text:'Retirement drawdown chart'},xaxis:{title:'Age'},yaxis:{title:'SGD'},template:'plotly_white',showlegend:true,annotations:[{x:Math.max(65,d.ages[0]),y:Math.max(...d.start)*0.95,text:'Annuity starts',showarrow:false}]};
  Plotly.newPlot('chart',data,layout,{responsive:true,displaylogo:false});
  Plotly.relayout('chart',{shapes:[{type:'line',x0:parseInt(ann_age.value),x1:parseInt(ann_age.value),y0:0,y1:1,yref:'paper',line:{dash:'dash',color:'gray'}}]});
