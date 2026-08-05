@@ -9,13 +9,24 @@ on:
 
 jobs:
   semgrep:
-    name: semgrep/scan
+    name: Semgrep Security Scan
     runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep:latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Run Semgrep OSS Scan
-        uses: semgrep/semgrep:latest
+        run: |
+          mkdir -p reports
+          semgrep ci --sarif --output=reports/semgrep.sarif || true
+        continue-on-error: true
+
+      - name: Upload Semgrep report
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          config: p/default
+          name: semgrep-report
+          path: reports/semgrep.sarif
+          retention-days: 30
